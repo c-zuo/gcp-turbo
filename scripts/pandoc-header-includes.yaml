@@ -1,0 +1,15 @@
+---
+title: Turbo Project Factory
+author: Taneli Leppä, taneli@google.com
+header-includes: |
+
+    \usepackage{titling}
+    \pretitle{\begin{center}\fontsize{36bp}{36bp}\bfseries\selectfont}
+    \posttitle{\par\end{center}}
+
+    \usepackage{fancyhdr}
+    \pagestyle{fancy}
+    \fancyhead[CO,CE]{\fontsize{10}{12} \color{gray} \selectfont © 2020 Google LLC}
+    \fancyfoot[CO,CE]{\fontsize{6}{8} \color{gray} \selectfont Provided as-is, without warranty or representation for any use or purpose. Your use of it is subject to your agreement with Google.}
+    \fancyfoot[LE,RO]{\thepage}    
+---

@@ -1,0 +1,27 @@
+project:
+  status: active # Not supported yet: active|archived|deleted
+  displayName: Example project # Display name for the project
+  projectId: example-project # Project ID: once this is set, cannot be changed
+  # gitlabProject: example # Gitlab project ID
+  # githubProject: example # Github project ID
+  # projectTemplate: gcp-terraform # Not supported yet: reserved for Git project template
+  chargingCode: "123456" # A chargeback code used for the project
+  folder: infra # Folder where to place the folder 
+  owner: userNameHere # Not supported yet: reserved for possible extended IAM/Gitlab/Github privileges
+  # gkeNamespace: example # Not supported yet: reserved for future automatic K8s namespace provisioning
+  # dnsDomain: custom-domain.customer.com # Not supported yet: reserved for managing a project specific Cloud DNS domain
+  team: # List of roles and team members
+    developer:
+      - admin
+      - dan
+    data-analyst:
+      - devin
+  environments: # Environment where to provision the projects in
+    - nonprod
+    - prod
+  additionalApis: # Additional APIs to activate
+    - cloudscheduler.googleapis.com
+  # allowPublicServices: true # If public services are allowed, activate org policy overrides for project
+  # budget: # Project specific budget
+  #   nonprod: 100000
+  #   prod: 1000000

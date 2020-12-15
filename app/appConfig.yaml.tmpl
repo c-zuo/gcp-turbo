@@ -1,0 +1,55 @@
+# Copyright 2020 Google LLC. This software is provided as-is, without warranty or representation 
+# for any use or purpose. Your use of it is subject to your agreement with Google.
+#
+#
+# This file is used by the Terraform deployment scripts for Turbo Project Factory frontend.
+#
+# Turbo Project Factory application configuration
+app:
+  frontend:
+    apiUrl: /api/
+  backend:
+    serviceAccount: ${service_account} # The service account that the application run under
+    iapAudience: ${iap_audience} # IAP audience
+    noAuthenticationCIDRs: # These IP ranges will get treated to be automatically logged in with the credentials below (for local testing)
+      - 127.0.0.0/8
+    noAuthenticationUsername: admin@your.domain
+    noAuthenticationEmail: admin@your.domain
+    chargingCodes: # How to retrieve charging codes (currently GCS is supported, other types would require custom code)
+      type: gcs
+      # Rest of configuration comes from main Turbo Project Factory config.yaml
+    persistence: # Type of persistence (supported: gitlab (preferred), git)
+      type: gitlab
+      config:        
+        repoUrl: ${repository_url}
+        useFileSshKeys: true # Set this if you are having trouble with invalid credentials type
+        # username: "username"
+        # password: "password"
+        username: git
+        privateKey: ${ssh_private_key}
+        publicKey: ${ssh_public_key}
+        gitlabUrl: ${gitlab_url}
+        gitlabToken: ${gitlab_token}
+        gitlabProject: ${gitlab_project}
+    cms: # Lightweight CMS content
+      - id: frontpage
+        title: "Welcome to Turbo Project Factory"
+        content: |
+          <p>
+          Here you can create a project request for a Google Cloud Platform project. If you have any 
+          problems or questions, please contact <a href="mailto:admin@your.domain">admin@your.domain</a>
+          by email.
+          </p>
+        boxes: # Additional content boxes you can add to the frontpage.
+          - title: Cloud Console
+            content: |
+              Google Cloud Platform lets you build, deploy, and scale applications, websites, and services on the same infrastructure as Google.
+            link:
+              href: https://console.cloud.google.com
+              title: Go to Cloud Console
+          - title: Gitlab
+            content: |
+              In Gitlab, you can see your previous project requests and correct any previous ones that have not been approved yet.
+            link:
+              href: ${gitlab_url}${gitlab_project}
+              title: Go to Gitlab

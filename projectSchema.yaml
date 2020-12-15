@@ -1,0 +1,30 @@
+# Copyright 2020 Google LLC. This software is provided as-is, without warranty or representation 
+# for any use or purpose. Your use of it is subject to your agreement with Google.
+#
+project:
+    status: enum('active', 'archived', 'deleted', required=True)
+    displayName: regex('^[a-zA-Z0-9\- !]{1,20}$', required=True)
+    projectId: str(min=2, max=13, required=True)
+    description: str(min=2, max=1024, required=False)
+    gitlab: include('gitlab', required=False)
+    githubProject: str(min=2, max=64, required=False)
+    projectTemplate: str(min=2, max=64, required=False)
+    chargingCode: str(min=2, max=63, required=True)
+    labels: labels(required=False)
+    folder: folder(required=True)
+    owner: user(required=True)
+    gkeNamespace: str(min=3, max=253, required=False)
+    dnsDomain: str(min=3, max=253, required=False)
+    team: teams(required=True)
+    iap: include('iap', required=False)
+    environments: environments(required=True)
+    additionalApis: apis(type='all', required=False)
+    allowPublicServices: bool(required=False)
+    budget: map(int(min=1), key=environment(), required=False)
+---
+iap:
+    title: str(min=3, max=253, required=True)
+---
+gitlab:
+    group: str(min=3, max=253, required=True)
+    project: str(min=3, max=253, required=True)

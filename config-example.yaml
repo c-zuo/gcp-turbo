@@ -1,0 +1,415 @@
+# Copyright 2020 Google LLC. This software is provided as-is, without warranty or representation 
+# for any use or purpose. Your use of it is subject to your agreement with Google.
+#
+# Organization ID (visible in Cloud Console when selecting the organization node)
+organizationId: 1234567890
+#
+# Project ID format (supports placeholders %id%, %env% and %folder%)
+projectIdFormat: turbo-%id%-%env%
+#
+# Terraform seed project (where the backend state file will be stored and against which API 
+# calls will be executed) 
+seedProject: turbo-terraform-prod
+#
+# Service account for the Project Factory  
+terraformServiceAccount: turbo-project-factory@turbo-terraform-prod.iam.gserviceaccount.com
+#
+# BigQuery destination for project information (project.dataset.table)
+# bigqueryDestination: project.dataset.table
+# Fixed reporting chain prefix
+# reportingChainPrefix:
+#   - ceo@turbo.project
+#   - director@turbo.project
+#   - manager@turbo.project
+# 
+# Configuration for charging-codes-to-gcs.py (sends all unique project charging
+# codes to a file in JSON - helps the frontend app in searching existing codes)
+# chargingCodesDestinationBucket: 
+# chargingCodesDestinationObject: 
+#
+# Billing account ID (XXXXXX-XXXXXX-XXXXXX hexadecimal characters)
+billingAccount: 123456-123456-123456
+#
+# Cloud Identity customer ID (visible in admin.google.com by selecting Account > Account ID,
+# remember to prefix the ID with "C")
+cloudIdentityCustomerId: C00000000
+#
+# Primary domain for groups and users (if you set the domain to empty string, no domain will be appended)
+domain: turbo.project
+#
+# Additional domains
+# secondaryDomains:
+#  - turbo.xyz
+# Charging code label name (usually an internal chargeback ID)
+# chargingCodeLabel: charging-code
+#
+# For IAP consent screen support, automatically create a support email group. 
+# iapSupportGroupFormat: iap-support-%project%@%domain.com
+#
+# List of different environments that are supported
+environments:
+  - prod 
+  - nonprod
+  - sandbox
+#
+# Description of the environments (for the frontend app)
+environmentsDescription:
+  prod: 
+    title: "Production"
+    description: "Production projects"
+  nonprod:
+    title: "Non-production"
+    description: "Non-production projects"
+  sandbox:
+    title: "Training sandbox"
+    description: "Learn GCP using a sandbox project!"
+#
+#
+# Default labels (supports placeholders: %id%, %folder% and %owner%)
+labels:
+  department: "%folder%"
+#
+# Default project metadata
+defaultProjectMetadata:
+  "enable-oslogin": "TRUE"
+  "enable-osconfig": "TRUE"
+#
+# Map of folders per business unit/function per environment
+# (maps against a project definitions folder parameter)
+folders: 
+  hpc: 
+    prod: 12345678
+    nonprod: 12345678
+    sandbox: 23456789
+  infrastructure:
+    prod: 12345678
+    nonprod: 12345678
+    sandbox: 1010010010
+  data:
+    prod: 12345678
+    nonprod: 12345678
+    sandbox: ""
+#
+# Description of folders for the frontend application
+foldersDescription:
+  hpc: 
+    title: "HPC"
+    description: "High Performance Computing projects"
+  infrastructure: 
+    title: "Infrastructure"
+    description: "Enterprise IT Infrastructure"
+  data: 
+    title: "Data warehouse"
+    description: "Datalake and data warehousing"
+#
+# To manage per-project Essential Contacts, specify the categories for the
+# owner of the project below.
+essentialContactsOwnerCategories:
+  - ALL
+#
+# Shared VPC host projects per business unit/function per environment
+sharedVpcProjects:
+  hpc:
+    prod: turbo-hpc-vpc-prod
+    nonprod: turbo-hpc-vpc-nonprod
+    sandbox: "" # No Shared VPC for sandbox
+  infrastructure:
+    prod: turbo-infra-vpc-prod
+    nonprod: turbo-infra-vpc-nonprod
+    sandbox: ""
+  data:
+    prod: turbo-data-vpc-prod
+    nonprod: turbo-data-vpc-nonprod
+    sandbox: ""
+#
+# Set autoCreateNetwork true to preserve default network inside the 
+# project. Useful for sandbox purposes.
+autoCreateNetwork:
+  hpc:
+    sandbox: true
+  infrastructure:
+    sandbox: true
+  data:
+    sandbox: true
+#
+# Not supported yet: VPC-SC perimeters per business unit/function per environment
+vpcServiceControlPerimeters:
+  hpc:
+    nonprod: ""
+    prod: ""
+    sandbox: ""
+  infrastructure:
+    prod: ""
+    nonprod: ""
+    sandbox: ""
+  secret:
+    prod: ""
+    nonprod: ""
+    sandbox: ""
+#
+# By default the Compute Engine default service account will be deprivileged.
+# This is the list of permissions that is added to the account.
+defaultComputeSAPrivileges:
+  - roles/monitoring.viewer
+  - roles/monitoring.metricWriter
+  - roles/logging.logWriter
+#
+# This is the list of permissions that will be added to the service account
+# that gets provisioned in every project (project-service-account@). If you
+# want to leverage this account for eg. Terraform resource provisioning,
+# you can grant additional privileges here.
+defaultProjectSAPrivileges:
+  - roles/editor # You'll probably want to give less permissions than this...
+#
+# Organisational policies set for the project when allowPublicServices
+# is set to true.
+publicServicesOrgPolicies:
+  booleanPolicies: {}
+  listPolicies:
+    constraints/compute.vmExternalIpAccess: []
+    constraints/compute.restrictLoadBalancerCreationForTypes:
+      - INTERNAL_TCP_UDP
+      - INTERNAL_HTTP_HTTPS
+      - EXTERNAL_NETWORK_TCP_UDP
+      - EXTERNAL_TCP_PROXY
+      - EXTERNAL_SSL_PROXY
+      - EXTERNAL_HTTP_HTTPS
+    constraints/compute.restrictProtocolForwardingCreationForTypes:
+      - INTERNAL
+      - EXTERNAL
+#
+# List of APIs to activate by default in a new project.
+# Note: adding APIs here after the project has been created will have no effect.
+defaultApis:
+  - cloudresourcemanager.googleapis.com
+  - compute.googleapis.com
+  - cloudbilling.googleapis.com
+  - iam.googleapis.com
+  - servicenetworking.googleapis.com
+  - iap.googleapis.com
+  - cloudfunctions.googleapis.com # If you intend to use Serverless VPC Access
+  - run.googleapis.com # If you intend to use Serverless VPC Access
+  - cloudbuild.googleapis.com # If you intend to use Serverless VPC Access
+#
+# Groups that grant access to the shared VPC host projects (per 
+# business unit/function per environment).
+#
+# These groups should have the following permissions on the corrensponding
+# Shared VPC:
+# - roles/compute.networkUser 
+# - roles/compute.viewer 
+# - (roles/container.clusterViewer if using shared GKE clusters in host project
+#    Shared VPC)
+sharedVpcGroups:
+  hpc:
+    prod: turbo-hpc-svpc-prod
+    nonprod: turbo-hpc-svpc-nonprod
+    sandbox: "" # No Shared VPC for sandbox
+  infrastructure:
+    prod: turbo-infra-svpc-prod
+    nonprod: turbo-infra-svpc-nonprod
+    sandbox: ""
+  data:
+    prod: turbo-data-svpc-prod
+    nonprod: turbo-data-svpc-nonprod
+    sandbox: ""
+#
+# Serverless VPC Access groups
+#
+# These groups should be granted the following permissions on the corresponding
+# Shared VPCs:
+# - Serverless VPC Access User: roles/vpcaccess.user
+sharedVpcServerlessGroups:
+  hpc:
+    prod: turbo-hpc-serverless-prod
+    nonprod: turbo-hpc-serverless-nonprod
+    sandbox: "" # No Shared VPC for sandbox
+  infrastructure:
+    prod: turbo-infra-serverless-prod
+    nonprod: turbo-infra-serverless-nonprod
+    sandbox: ""
+  data:
+    prod: turbo-data-serverless-prod
+    nonprod: turbo-data-serverless-nonprod
+    sandbox: ""
+#
+# List of service accounts that will be added to the above groups.
+serverlessServiceAccounts:
+  - service-%number%@serverless-robot-prod.iam.gserviceaccount.com
+  - service-%number%@gcf-admin-robot.iam.gserviceaccount.com
+#
+# When creating groups for the project, use this for group format
+# (placeholders supported: %project% for project name, %group% for 
+# group name, %env% for environment)
+projectGroupFormat: turbo-%project%-%group%-%env%
+#
+# Disable project group creation and membership management, just add
+# IAM permissions to the groups (groups have to exist according to
+# the project group naming format!)
+# onlyProjectGroupIamPermissions: true
+#
+# Group name for project "main group" (convenience group that contains
+# all of the project's groups)
+projectMainGroup: all
+#
+# Group name for the project owner (convenience group that contains 
+# the project's owner)
+projectOwnerGroup: owners
+#
+# Set default groups for projects (must be still specified in projectGroups below,
+# and will get formatted according to projectGroupFormat). Combine with 
+# onlyProjectGroupIamPermissions to use for example AD-originated groups.
+# (think of this as forcing the teams setting in the project definition)
+#setProjectGroups:
+#  developer: []
+#  data-analyst: []
+#
+# Project groups to create
+projectGroups:
+  developer:
+    title: "Developer"
+    description: "Software developers."
+    commonIamPermissions:
+      - roles/compute.instanceAdmin
+      - roles/iap.tunnelResourceAccessor
+      - roles/compute.osAdminLogin
+      - roles/compute.loadBalancerAdmin
+      - roles/servicenetworking.networksAdmin
+      - roles/cloudfunctions.admin
+      - roles/iap.admin
+      - roles/storage.admin
+      - roles/cloudsql.admin
+      - roles/appengine.appAdmin
+      - roles/file.editor
+      - roles/logging.admin
+    # Additional per-folder per-environment permissions that will be granted on top of
+    # projectIamPermissions.
+    perEnvironmentIamPermissions: 
+      hpc:
+        nonprod: []
+        prod: []
+        sandbox: 
+          - roles/editor
+      infrastructure:
+        nonprod: []
+        prod: []
+        sandbox: 
+          - roles/editor
+      data:
+        nonprod: []
+        prod: []
+        sandbox: 
+          - roles/editor
+    computeDefaultSAPermissions:
+      - roles/iam.serviceAccountUser
+    projectDefaultSAPermissions: []
+    gitlabRole: developer # 0 = No access, 10 = Guest, 20 = Reporter, 30 = Developer, 40 = Maintainer
+    githubRole: push
+  data-analyst:
+    title: "Data analyst"
+    description: "Data analysts."
+    commonIamPermissions:
+      - roles/compute.instanceAdmin
+      - roles/notebooks.admin
+      - roles/bigquery.dataEditor
+      - roles/bigquery.jobUser
+      - roles/iap.tunnelResourceAccessor
+      - roles/cloudfunctions.admin
+      - roles/storage.admin
+      - roles/cloudsql.admin
+      - roles/notebooks.admin
+      - roles/logging.admin
+    # Additional per-folder per-environment permissions that will be granted on top of
+    # projectIamPermissions.
+    perEnvironmentIamPermissions: 
+      hpc:
+        nonprod: []
+        prod: []
+        sandbox: 
+          - roles/editor
+      infrastructure:
+        nonprod: []
+        prod: []
+        sandbox: 
+          - roles/editor
+      data:
+        nonprod: []
+        prod: []
+        sandbox: 
+          - roles/editor
+    computeDefaultSAPermissions:
+      - roles/iam.serviceAccountUser
+    projectDefaultSAPermissions: []
+    gitlabRole: reporter
+    githubRole: pull
+#
+# Project's service account group format
+projectServiceAccountGroupFormat: turbo-%project%-serviceaccounts-%env%
+#
+# Members that will be placed in group for project's service accounts
+# (Note: for some of these to get provisioned, you'll likely need to
+# enable the APIs on project creation)
+# 
+# Please note: to add some service accounts, the Project Factory
+# needs to add the provisioner SA as an owner of the group. So
+# to use this functionality, also define terraformServiceAccount.
+projectServiceAccountGroupMembers:
+  - project-service-account@%project%.iam.gserviceaccount.com
+  - %number%-compute@developer.gserviceaccount.com
+  - %number%@cloudservices.gserviceaccount.com
+#
+# Add project's service accounts group to Shared VPC groups
+projectServiceAccountGroupJoinSharedVpc: true
+#
+# 
+# Monitoring workspace projects (where Cloud Monitoring aka Stackdriver workspaces live)
+monitoringProjects:
+  hpc: 
+    prod: turbo-monitoring-prod
+    nonprod: turbo-monitoring-nonprod
+  infrastructure:
+    prod: turbo-monitoring-prod
+    nonprod: turbo-monitoring-nonprod
+  data:
+    prod: turbo-monitoring-prod
+    nonprod: turbo-monitoring-nonprod
+#
+# Monitoring access groups per business unit per environment 
+monitoringGroups:
+  hpc: 
+    prod: turbo-monitoring-prod
+    nonprod: turbo-monitoring-nonprod
+  infrastructure:
+    prod: turbo-monitoring-prod
+    nonprod: turbo-monitoring-nonprod
+  data:
+    prod: turbo-monitoring-prod
+    nonprod: turbo-monitoring-nonprod
+#
+# Budget alert Pub/Sub topics per BU per environment
+budgetAlertTopics:
+  hpc: 
+    prod: projects/turbo-billing-prod/topics/billing-alerts
+    nonprod: projects/turbo-billing-prod/topics/billing-alerts
+  infrastructure:
+    prod: projects/turbo-billing-prod/topics/billing-alerts
+    nonprod: projects/turbo-billing-prod/topics/billing-alerts
+  data:
+    prod: projects/turbo-billing-prod/topics/billing-alerts
+    nonprod: projects/turbo-billing-prod/topics/billing-alerts
+#
+# At which percents will budget alerts get triggered by default
+# (can be overridden per project basis)
+#
+# If you are using programmatic alerts, leave this empty ("[]"), because
+# they will not have any effect for the notifications.
+budgetAlertSpentPercents:
+  - 80
+  - 90
+  - 100
+#
+# Default budget for projects per environment
+#defaultBudget:
+#  nonprod: 1000
+#  prod: 10000
+

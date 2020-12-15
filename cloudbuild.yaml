@@ -1,0 +1,94 @@
+# Copyright 2020 Google LLC. This software is provided as-is, without
+# warranty or representation for any use or purpose. Your use of it is
+# subject to your agreement with Google.
+steps:
+  - id: 'fetch monitoring api key'
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud secrets versions access latest \
+          --secret=monitoring-api-key \
+          --format='get(payload.data)' | tr '_-' '/+' | base64 -d > sd_api_key.txt
+
+  - id: 'branch name'
+    name: 'python:3.8-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          echo "***********************"
+          echo "$BRANCH_NAME"
+          echo "***********************"
+
+  - id: 'install prerequisities'
+    name: 'python:3.8-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          cd scripts
+          pip3 install --user -r requirements.txt
+
+  - id: 'validate'
+    name: 'python:3.8-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+          ls projects/*.yaml
+
+          for project in projects/*.yaml 
+          do
+            >&2 echo "Validating project $project..."
+            python3 scripts/validate-project.py --schema projectSchema.yaml $project || exit 1
+          done
+
+
+  - id: 'terraform init'
+    name: 'hashicorp/terraform:${_TERRAFORM_VERSION}'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          cd terraform
+          terraform init
+    env:
+      - 'TF_IN_AUTOMATION=1'
+
+  - id: 'terraform plan'
+    name: 'hashicorp/terraform:${_TERRAFORM_VERSION}'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          cd terraform
+          terraform plan -out=$BRANCH_NAME.tfplan -var "monitoring_api_key=$(cat ../sd_api_key.txt)"
+          terraform show $BRANCH_NAME.tfplan > $BRANCH_NAME.tfplan.txt
+    env:
+      - 'TF_IN_AUTOMATION=1'
+
+  - id: 'terraform apply'
+    name: 'hashicorp/terraform:${_TERRAFORM_VERSION}'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - |
+          cd terraform
+          if [ "${_FORCE_APPLY}" == "1" ] ; then
+            terraform apply -auto-approve -var "monitoring_api_key=$(cat ../sd_api_key.txt)" $BRANCH_NAME.tfplan 
+          else
+            echo "Not applying because _FORCE_APPLY is not set to 1."
+          fi
+          exit 0
+    env:
+      - 'TF_IN_AUTOMATION=1'
+substitutions:
+  _FORCE_APPLY: '0'
+  _TERRAFORM_VERSION: '0.13.5'
+  _BACKEND_BUCKET: 'cust1-access-test-bucket'
+artifacts:
+  objects:
+    location: 'gs://${_BACKEND_BUCKET}/$REPO_NAME/$BRANCH_NAME/$BUILD_ID'
+    paths: ['terraform/$BRANCH_NAME.tfplan', 'terraform/$BRANCH_NAME.tfplan.txt']

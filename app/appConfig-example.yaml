@@ -1,0 +1,41 @@
+# Copyright 2020 Google LLC. This software is provided as-is, without warranty or representation 
+# for any use or purpose. Your use of it is subject to your agreement with Google.
+#
+#
+# Turbo Project Factory application configuration
+app:
+  frontend:
+    apiUrl: /api/
+  backend:
+    serviceAccount: "Service account, used for generating tokens"
+    iapAudience: "IAP audience here"
+    noAuthenticationCIDRs:
+      - 127.0.0.1/32
+    noAuthenticationUsername: admin@your.domain
+    noAuthenticationEmail: admin@your.domain
+    chargingCodes:
+      type: gcs
+      # Rest of configuration comes from main config.yaml
+    persistence:
+      type: gitlab
+      config:        
+        repoUrl: "ssh://git@your.gitlab.example.com/example/project-factory.git" # Remember to specify username or your credentials might not work!
+        # useFileSshKeys: true # Set this if you are having trouble with invalid credentials type
+        # username: "username"
+        # password: "password"
+        username: git
+        privateKey: |
+          -----BEGIN OPENSSH PRIVATE KEY-----
+          ...
+          -----END OPENSSH PRIVATE KEY-----
+        publicKey: |
+          ssh-ed25519 ... ...
+        gitlabUrl: https://your.gitlab.example.com/
+        gitlabToken: "YOUR-GITLAB-TOKEN" # for sudo, requires Personal Token from admin with api + sudo scopes
+        gitlabProject: example/project-factory
+        gitlabSudo: true
+    cms:
+      - id: frontpage
+        title: "Welcome to Turbo Project Factory"
+        content: |
+          <p>HTML content here</p>

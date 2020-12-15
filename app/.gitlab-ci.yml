@@ -1,0 +1,80 @@
+default:
+  image:
+    name: $CI_REGISTRY_IMAGE/turbo-project-factory
+    entrypoint:
+      - "/usr/bin/env"
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+  before_script:
+    - shopt -s expand_aliases
+    - alias convert_report="jq -r '([.resource_changes[]?.change.actions?]|flatten)|{\"create\":(map(select(.==\"create\"))|length),\"update\":(map(select(.==\"update\"))|length),\"delete\":(map(select(.==\"delete\"))|length)}'"
+    - cd app
+    - python3 bundle-configs.py --app-config appConfig.yaml.tmpl --config ../config.yaml --schema ../projectSchema.yaml --schema-help ../projectSchemaHelp.yaml --approved-apis ../projectApprovedApis.yaml
+  
+variables:
+  TF_IN_AUTOMATION: "yes"
+  GCLOUD_TF_DOWNLOAD: "never"
+
+stages:
+  - validate
+  - build-container
+  - plan
+  - apply
+
+validate-tf:
+  stage: validate
+  script:
+    - terraform init -lock-timeout=600s
+    - terraform validate
+  tags:
+    - cloud
+
+build-container:
+  stage: build-container
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v1.0.0
+    entrypoint: [""]
+  before_script: []
+  script:
+    - /kaniko/executor --context . --dockerfile Dockerfile --destination $CONTAINER:$CI_COMMIT_SHORT_SHA
+  only:
+    refs:
+      - main
+    changes:
+      - app/Dockerfile
+      - app/backend/**/*
+      - app/frontend/**/*
+  tags:
+    - cloud
+    
+plan:
+  stage: plan
+  script:
+    - terraform init -lock-timeout=600s 
+    - terraform plan -lock-timeout=600s -var container_tag=$CI_COMMIT_SHORT_SHA -out=$CI_COMMIT_REF_SLUG.func.tfplan
+    - terraform show $CI_COMMIT_REF_SLUG.func.tfplan > $CI_COMMIT_REF_SLUG.func.txt
+    - terraform show -json $CI_COMMIT_REF_SLUG.func.tfplan > $CI_COMMIT_REF_SLUG.func.json
+    - cat $CI_COMMIT_REF_SLUG.func.json | convert_report > $CI_COMMIT_REF_SLUG.gitlab.func.json
+  tags:
+    - cloud
+  artifacts:
+    when: always
+    paths:
+      - app/$CI_COMMIT_REF_SLUG.func.tfplan
+      - app/$CI_COMMIT_REF_SLUG.func.txt
+      - app/$CI_COMMIT_REF_SLUG.func.json
+    reports:
+      terraform:
+        - app/$CI_COMMIT_REF_SLUG.gitlab.func.json
+
+apply:
+  stage: apply
+  resource_group: master
+  dependencies:
+    - master
+  script:
+    script:
+      - terraform init -lock-timeout=600s 
+      - terraform apply -lock-timeout=600s -input=false ../$CI_COMMIT_REF_SLUG.tfplan
+  tags:
+    - cloud

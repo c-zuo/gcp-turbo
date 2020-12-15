@@ -1,0 +1,23 @@
+# Copyright 2020 Google LLC. This software is provided as-is, without warranty or representation 
+# for any use or purpose. Your use of it is subject to your agreement with Google.
+#
+project:
+    status: enum('active', required=True) # Hold for approval if project is deactivated
+    displayName: any(required=False)
+    projectId: any(required=False)
+    description: any(required=False)
+    gitlabProject: any(required=False)
+    githubProject: any(required=False)
+    gitlab: any(required=False)
+    projectTemplate: any(required=False)
+    chargingCode: any(required=False)
+    folder: any(required=False)
+    owner: any(required=False)
+    gkeNamespace: any(required=False)
+    dnsDomain: any(required=False)
+    iap: any(required=False)
+    team: any(required=False)
+    environments: list(enum('nonprod'), required=True) # Require hold for approval for production projects
+    additionalApis: apis(type='approved', required=False)
+    allowPublicServices: false(required=False) # Require hold for approval for public services
+    budget: any(required=False)
